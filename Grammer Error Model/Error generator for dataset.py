@@ -2,31 +2,6 @@ import pandas as pd
 import json
 import random
 
-# Load EOWL words
-eowl_words_df = pd.read_csv('/mnt/data/EOWL_words.csv')
-eowl_words = eowl_words_df['word'].tolist()
-
-# Load homophones map
-with open('/mnt/data/homophones_map.json') as f:
-    homophones = json.load(f)
-
-# Load keyboard layout map
-with open('/mnt/data/keyboard_layout_map.json') as f:
-    keyboard_layout = json.load(f)
-
-# Load phonetic map
-with open('/mnt/data/phonetic_map.json') as f:
-    phonetic_map = json.load(f)
-
-# Load visual similarities map
-with open('/mnt/data/visual_similarities_map.json') as f:
-    visual_similarities = json.load(f)
-
-# Load compound words map
-with open('/mnt/data/compound_map.json') as f:
-    compound_map = json.load(f)
-
-
 def generate_random_subset_indices(word):
     length = len(word)
     num_chars = random.randint(1, max(1, length // 2))
@@ -256,23 +231,131 @@ def generate_double_letter_errors(word):
     return list(errors)
 
 
-
+# Comprehensive error generation with all errors
 def generate_all_errors(word, homophones, phonetic_map, keyboard_layout, visual_similarities, compound_map):
     errors = set()
-    errors.update(generate_homophone_errors(word, homophones))
-    errors.update(generate_phonetic_errors(word, phonetic_map))
-    errors.update(generate_keyboard_proximity_errors(word, keyboard_layout))
-    errors.update(generate_double_letter_errors(word))
-    errors.update(generate_capitalization_errors(word))
-    errors.update(generate_word_boundary_errors(word, compound_map))
-    errors.update(generate_visual_similarity_errors(word, visual_similarities))
-    errors.update(generate_mirror_errors(word))
-    errors.update(generate_truncated_errors(word))
-    errors.update(generate_repeated_section_errors(word))
-    errors.update(generate_common_suffix_prefix_errors(word))
-    errors.update(generate_silent_letter_errors(word))
-    errors.update(generate_vowel_misplacement_errors(word))
-    errors.update(generate_consonant_doubling_dropping_errors(word))
-    errors.update(generate_typographic_swap_errors(word, phonetic_map))
-    errors.update(generate_plural_possessive_errors(word))
-    errors.update
+    errors.add(generate_homophone_errors(word, homophones))
+    errors.add(generate_phonetic_errors(word, phonetic_map))
+    errors.add(generate_keyboard_proximity_errors(word, keyboard_layout))
+    errors.add(generate_double_letter_errors(word))
+    errors.add(generate_capitalization_errors(word))
+    errors.add(generate_word_boundary_errors(word, compound_map))
+    errors.add(generate_visual_similarity_errors(word, visual_similarities))
+    errors.add(generate_mirror_errors(word))
+    errors.add(generate_truncated_errors(word))
+    errors.add(generate_repeated_section_errors(word))
+    errors.add(generate_common_suffix_prefix_errors(word))
+    errors.add(generate_silent_letter_errors(word))
+    errors.add(generate_vowel_misplacement_errors(word))
+    errors.add(generate_consonant_doubling_dropping_errors(word))
+    errors.add(generate_typographic_swap_errors(word, phonetic_map))
+    errors.add(generate_plural_possessive_errors(word))
+    errors.add(generate_homoglyph_errors(word, visual_similarities))
+    errors.add(generate_metathesis_errors(word))
+    errors.add(generate_character_omission_errors(word))
+    errors.add(generate_character_duplication_errors(word))
+    errors.add(generate_whitespace_errors(word))
+    errors.add(generate_case_errors(word))
+    errors.add(generate_transposition_errors(word))
+    errors.add(generate_repetition_errors(word))
+    return list(errors)
+
+# List of all error generation functions
+error_functions = [
+    generate_phonetic_errors,
+    generate_homophone_errors,
+    generate_keyboard_proximity_errors,
+    generate_word_boundary_errors,
+    generate_visual_similarity_errors,
+    generate_typographic_swap_errors,
+    generate_homoglyph_errors,
+    generate_common_suffix_prefix_errors,
+    generate_silent_letter_errors,
+    generate_vowel_misplacement_errors,
+    generate_repetition_errors,
+    generate_metathesis_errors,
+    generate_character_omission_errors,
+    generate_character_duplication_errors,
+    generate_whitespace_errors,
+    generate_case_errors,
+    generate_transposition_errors,
+    generate_plural_possessive_errors,
+    generate_consonant_doubling_dropping_errors,
+    generate_mirror_errors,
+    generate_truncated_errors,
+    generate_repeated_section_errors,
+    generate_capitalization_errors,
+    generate_double_letter_errors
+]
+
+
+# Function to generate multiple errors
+def generate_multiple_errors(word, homophones, phonetic_map, keyboard_layout, visual_similarities, compound_map):
+    num_functions = random.randint(2, 8)
+    selected_functions = random.sample(error_functions, num_functions)
+
+    errors = set([word])
+    for func in selected_functions:
+        new_errors = set()
+        for error in errors:
+            if func == generate_phonetic_errors or func == generate_typographic_swap_errors:
+                new_errors.add(func(error, phonetic_map))
+            elif func == generate_homophone_errors:
+                new_errors.add(func(error, homophones))
+            elif func == generate_keyboard_proximity_errors:
+                new_errors.add(func(error, keyboard_layout))
+            elif func == generate_word_boundary_errors:
+                new_errors.add(func(error, compound_map))
+            elif func == generate_visual_similarity_errors or func == generate_homoglyph_errors:
+                new_errors.add(func(error, visual_similarities))
+            else:
+                new_errors.add(func(error))
+        errors.update(new_errors)
+
+    return list(errors)
+
+# Save results to a CSV file
+def save_errors_to_csv(words, homophones, phonetic_map, keyboard_layout, visual_similarities, compound_map, output_file):
+    data = []
+    for word in words:
+        all_error_words = generate_all_errors(word, homophones, phonetic_map, keyboard_layout, visual_similarities, compound_map)
+        multiple_error_words = generate_multiple_errors(word, homophones, phonetic_map, keyboard_layout, visual_similarities, compound_map)
+        combined_error_words = set(all_error_words + multiple_error_words)  # Combine both sets of errors
+        for error in combined_error_words:
+            if error != word:  # Avoid adding the original word as an error
+                data.append([word, error])
+
+    df = pd.DataFrame(data, columns=['Words', 'Error Words'])
+    df.to_csv(output_file, index=False)
+
+
+# Usage:
+
+# Load EOWL words
+eowl_words_df = pd.read_csv('data/EOWL_words.csv')
+eowl_words = eowl_words_df['word'].tolist()
+
+# Load homophones map
+with open('data/homophones_map.json') as f:
+    homophones = json.load(f)
+
+# Load keyboard layout map
+with open('data/keyboard_layout_map.json') as f:
+    keyboard_layout = json.load(f)
+
+# Load phonetic map
+with open('data/phonetic_map.json') as f:
+    phonetic_map = json.load(f)
+
+# Load visual similarities map
+with open('data/visual_similarities_map.json') as f:
+    visual_similarities = json.load(f)
+
+# Load compound words map
+with open('data/compound_map.json') as f:
+    compound_map = json.load(f)
+
+output_file = 'errors.csv'
+
+
+save_errors_to_csv(eowl_words, homophones, phonetic_map, keyboard_layout, visual_similarities, compound_map, output_file)
