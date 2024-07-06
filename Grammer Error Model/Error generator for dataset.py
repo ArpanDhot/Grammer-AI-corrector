@@ -4,7 +4,11 @@ import random
 
 def generate_random_subset_indices(word):
     length = len(word)
+    if length == 0:
+        return []  # Handle empty word case
     num_chars = random.randint(1, max(1, length // 2))
+    if num_chars > length:
+        num_chars = length
     return random.sample(range(length), num_chars)
 
 
@@ -333,7 +337,7 @@ def save_errors_to_csv(words, homophones, phonetic_map, keyboard_layout, visual_
 
 # Load EOWL words
 eowl_words_df = pd.read_csv('data/EOWL_words.csv')
-eowl_words = eowl_words_df['word'].tolist()
+eowl_words = eowl_words_df['Words'].tolist()
 
 # Load homophones map
 with open('data/homophones_map.json') as f:
