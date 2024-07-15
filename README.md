@@ -1,5 +1,5 @@
 
-# GrammarAI
+# Grammer-AI-corrector
 
 GrammarAI is a deep learning-based project aimed at correcting spelling and grammatical errors in text. It leverages TensorFlow for model training and prediction, using a sequence-to-sequence approach with LSTM layers.
 
